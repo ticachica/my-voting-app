@@ -185,13 +185,3 @@ export class SigninModal extends React.Component {
     )
   }
 }
-
-/*
-export class PollList extends React.Component {
-  render() {
-    return (
-
-    )
-  }
-}
-*/
