@@ -1,23 +1,21 @@
 'use strict';
 
-const mongooseCrudify = require('mongoose-crudify');
 const Poll = require('../components/poll');
 
-//Since DELETE doesn't return the _id of deleted item by default
-const addIdToDeleteResults = (req, res, next) => {
-    return res. json(req.crudify.err || ( req.method === 'DELETE' ? req.params : req.crudify.result));
+exports.getPolls = (req, res) => {
+    //TODO: Add param of userId to only get polls for a certain user
+    Poll.find({}, (err, poll) => {
+        if (err)
+            res.send(err);
+        res.json(poll);
+    });
 };
 
-modules.exports = (server, router) => {
-    // Docs: https://github.com/ryo718/mongoose-crudify
-    server.use(
-        '/polls',
-        mongooseCrudify({
-            Model: Poll,
-            endReponseInAction: false,
-            afterActions: [
-                {middlewares: [addIdToDeleteResults]},
-            ],
-        }) 
-    );
+exports.createPoll = (req, res) => {
+    let new_poll = new Poll(req.body);
+    new_poll.save((err,poll) => {
+        if (err)
+            res.send(err);
+        res.json(poll);
+    });
 };

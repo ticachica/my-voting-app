@@ -148,7 +148,7 @@ export class UserMenu extends React.Component {
           <NavItem>
             <Form id="newpoll" method="post" action="/newpoll" onSubmit={this.handleNewPollSubmit}>
               <input name="_csrf" type="hidden" value={session.csrfToken}/>
-              <Button type="submit" color="secondary">New Poll</Button>
+              <Button type="submit" color="primary">New Poll</Button>
             </Form>
           </NavItem>
           <NavItem>

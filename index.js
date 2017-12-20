@@ -8,6 +8,7 @@ const smtpTransport = require('nodemailer-smtp-transport')
 const directTransport = require('nodemailer-direct-transport')
 const MongoClient = require('mongodb').MongoClient
 const MongoStore = require('connect-mongo')(session)
+const Mongoose = require('mongoose');
 const NeDB = require('nedb') // Use MongoDB work-a-like if no user db configured
 const cookieParser = require('cookie-parser')
 
@@ -60,7 +61,7 @@ const app = next({
 // (this makes cookies easier to work with in pages when rendering server side)
 express.use(cookieParser())
 
-let userdb, sessionStore
+let userdb, polldb, sessionStore
 
 app.prepare()
 .then(() => {
@@ -68,9 +69,11 @@ app.prepare()
   return new Promise((resolve, reject) => {
     if (process.env.USER_DB_CONNECTION_STRING) {
       // Example connection string: mongodb://localhost:27017/mydb
-      MongoClient.connect(process.env.USER_DB_CONNECTION_STRING, (err, db) => {
-        userdb = db.collection('users')
-        resolve(true)
+     Mongoose.connect(process.env.USER_DB_CONNECTION_STRING, {useMongoClient: true}, (err, db) => {
+        Mongoose.Promise = global.Promise;
+        userdb = db.collection('users');
+        polldb = db.collection('polls')
+        resolve(true);
       })
     } else {
       // If no user db connection string, use in-memory MongoDB work-a-like
@@ -177,6 +180,18 @@ app.prepare()
       return res.status(403).json({error: 'Must be signed in to update profile'})
     }
   })
+
+  // Expose a route to allow users to create a new poll
+  express.post('/newpoll', (req, res) => {
+      if (req.user) {
+        //Insert a new poll if the user is signed in
+        //TODO: Add polldb.create
+        //TODO: Make sure it redirects to the poll page with new code
+        return res.status(204).redirect('/')
+      } else {
+        return res.status(403).json({error: 'Must be signed in to update profile'})
+      }
+    })
   
   // Default catch-all handler to allow Next.js to handle all other routes
   express.all('*', (req, res) => {

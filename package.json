@@ -1,7 +1,7 @@
 {
   "name": "my-voting-app",
   "version": "1.0.0",
-  "description": "A starter Next.js project with email and oAuth authentication",
+  "description": "Voting App using Next.js with email, oAuth authentication, and mongodb",
   "author": "Iain Collins <me@iaincollins.com>",
   "license": "ISC",
   "repository": "https://github.com/iaincollins/nextjs-starter.git",
@@ -20,6 +20,7 @@
     "jquery": "^3.2.1",
     "lusca": "^1.5.1",
     "mongodb": "^2.2.31",
+    "mongoose": "^4.13.7",
     "mongoose-crudify": "^0.2.0",
     "nedb": "^1.8.0",
     "next": "^3.2.2",

@@ -6,7 +6,6 @@ import Page from '../components/page'
 import Layout from '../components/layout'
 import Session from '../components/session'
 import Cookies from '../components/cookies'
-import Poll from '../components/poll'
 
 /**
  * This modules uses 'unfetch', which works like fetch, except - unlike
@@ -35,6 +34,9 @@ export default class extends Page {
       linkedWithTwitter: false,
       alertText: null,
       alertStyle: null,
+      _createdBy: '',
+      title: '',
+      options: [],
     }
     if (props.session.user) {
       this.state.name = props.session.user.name
@@ -53,7 +55,7 @@ export default class extends Page {
 
     // If the user bounces off to link/unlink their account we want them to
     // land back here after signing in with the other service / unlinking.
-    Cookies.save('redirect_url', '/account')
+    Cookies.save('redirect_url', '/newpoll')
     
     this.getProfile()
   }
@@ -71,7 +73,8 @@ export default class extends Page {
         emailVerified: user.emailVerified,
         linkedWithFacebook: user.linkedWithFacebook,
         linkedWithGoogle: user.linkedWithGoogle,
-        linkedWithTwitter: user.linkedWithTwitter
+        linkedWithTwitter: user.linkedWithTwitter,
+        _createdBy: user.id
       })
     })
   }
@@ -93,10 +96,19 @@ export default class extends Page {
     
     const formData = {
       _csrf: await Session.getCsrfToken(),
-      name: this.state.name || '',
-      email: this.state.email || ''
+      _createdBy: this.state._createdBy,
+      title: this.state.title || '',
+      options: []
     }
     
+    // Parse the options input into options String array 
+    if (this.state.options.length != 0 )
+      formData.options = formData.options.concat(this.state.options.split('/n'));
+    else {
+      //Did not put in any options. Should reject the form but for now just put dummy options.
+      formData.options.push('a','b');
+    }
+
     // URL encode form
     // Note: This uses a x-www-form-urlencoded rather than sending JSON so that
     // the form also in browsers without JavaScript
@@ -116,7 +128,7 @@ export default class extends Page {
       if (res.status === 200) {
         this.getProfile()
         this.setState({
-          alertText: 'Changes to your profile have been saved',
+          alertText: 'You new poll has been saved',
           alertStyle: 'alert-success',
         })
         // Force update session so that changes to name or email are reflected
@@ -142,43 +154,38 @@ export default class extends Page {
         <Layout session={this.state.session} navmenu={false}>
           <Row>
             <Col xs="12" className="text-center">
-              <h1 className="mb-0">A New Poll</h1>
+              <h1 className="mb-0">Create a New Poll</h1>
               <p className="lead text-muted">
-                Create a new poll
+                Create a new poll with options
               </p>
             </Col>
           </Row>
           <Row>
             <Col xs="12" md="8" lg="9">
               {alert}
-              <Form method="post" action="/account/user" onSubmit={this.onSubmit}>
+              <Form method="post" action="/newpoll" onSubmit={this.onSubmit}>
                 <Input name="_csrf" type="hidden" value={this.state.session.csrfToken} onChange={()=>{}}/>
+                <Input name="_createdBy" type="hidden" value={this.state._createdBy} onChange={()=>{}}/>
                 <FormGroup row>
-                  <Label sm={2}>Title:</Label>
+                  <Label sm={2}>Title</Label>
                   <Col sm={10} md={8}>
-                    <Input name="name" value={this.state.name} onChange={this.handleChange}/>
+                    <Input name="title" value={this.state.title} onChange={this.handleChange}/>
                   </Col>
                 </FormGroup>
                 <FormGroup row>
-                  <Label sm={2}>Email:</Label>
+                  <Label sm={2}>Options:</Label>
                   <Col sm={10} md={8}>
-                    <Input name="email" value={(this.state.email.match(/.*@localhost\.localdomain$/)) ? '' : this.state.email} onChange={this.handleChange}/>
+                    <Input name="options" type="textarea" value={this.state.options} onChange={this.handleChange}/>
                   </Col>
                 </FormGroup>
                 <FormGroup row>
                   <Col sm={12} md={10}>
                     <p className="text-right">
-                      <Button color="primary" type="submit">Save changes</Button>
+                      <Button color="primary" type="submit">Create Poll</Button>
                     </p>
                   </Col>
                 </FormGroup>
               </Form>
-            </Col>
-            <Col xs="12" md="4" lg="3">
-              <h3>Link Accounts</h3>
-              <LinkAccount provider="Facebook" session={this.props.session} linked={this.state.linkedWithFacebook}/>
-              <LinkAccount provider="Google" session={this.props.session} linked={this.state.linkedWithGoogle}/>
-              <LinkAccount provider="Twitter" session={this.props.session} linked={this.state.linkedWithTwitter}/>
             </Col>
           </Row>
         </Layout>
@@ -188,9 +195,9 @@ export default class extends Page {
         <Layout session={this.props.session} navmenu={false}>
           <Row>
             <Col xs="12" className="text-center">
-              <h1>Your Account</h1>
+              <h1>Create a New Poll</h1>
               <p className="lead" style={{marginBottom: '2em'}}>
-                <Link href="/auth/signin"><a>You must be signed in to view your account profile.</a></Link>
+                <Link href="/auth/signin"><a>You must be signed in to create a new poll.</a></Link>
               </p>
             </Col>
           </Row>
