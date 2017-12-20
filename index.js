@@ -11,6 +11,7 @@ const MongoStore = require('connect-mongo')(session)
 const Mongoose = require('mongoose');
 const NeDB = require('nedb') // Use MongoDB work-a-like if no user db configured
 const cookieParser = require('cookie-parser')
+const Poll = require('./models/poll')
 
 // Load environment variables from .env file if present
 require('dotenv').load()
@@ -142,6 +143,7 @@ app.prepare()
         res.json({
           name: user.name,
           email: user.email,
+          id: user._id,
           emailVerified: (user.emailVerified && user.emailVerified === true) ? true : false,
           linkedWithFacebook: (user.facebook && user.facebook.id) ? true : false,
           linkedWithGoogle: (user.google && user.google.id) ? true : false,
@@ -184,12 +186,30 @@ app.prepare()
   // Expose a route to allow users to create a new poll
   express.post('/newpoll', (req, res) => {
       if (req.user) {
+        console.log(req.body)
         //Insert a new poll if the user is signed in
-        //TODO: Add polldb.create
+        let newPoll = new Poll;
+        newPoll.title = req.body.title;
+        newPoll._createdBy = Mongoose.Types.ObjectId(req.body._createdBy);
+        //TODO Replace with code create logic here
+        newPoll.code = "poll1"
+        let options = req.body.options.split(",");
+        console.log(options)
+        if (options.length > 0) {
+          for(let i=0; i < options.length; i++) {
+            newPoll.options.push({ 
+              name: options[i]
+            });
+          }
+        }
+        newPoll.save(function (err) {
+          if (err) return handleError(err)
+            console.log('Success!');
+        });
         //TODO: Make sure it redirects to the poll page with new code
         return res.status(204).redirect('/')
       } else {
-        return res.status(403).json({error: 'Must be signed in to update profile'})
+        return res.status(403).json({error: 'Must be signed in to create a poll'})
       }
     })
   

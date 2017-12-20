@@ -41,6 +41,7 @@ export default class extends Page {
     if (props.session.user) {
       this.state.name = props.session.user.name
       this.state.email = props.session.user.email
+      this.state._createdBy = props.session.user.id
     }
     this.handleChange = this.handleChange.bind(this)
     this.onSubmit = this.onSubmit.bind(this)
@@ -98,25 +99,26 @@ export default class extends Page {
       _csrf: await Session.getCsrfToken(),
       _createdBy: this.state._createdBy,
       title: this.state.title || '',
-      options: []
     }
     
     // Parse the options input into options String array 
-    if (this.state.options.length != 0 )
-      formData.options = formData.options.concat(this.state.options.split('/n'));
-    else {
+    if (this.state.options.length != 0 ) {
+      formData.options = this.state.options.split('\n');
+      console.log(formData.options);
+    } else {
       //Did not put in any options. Should reject the form but for now just put dummy options.
       formData.options.push('a','b');
     }
-
+     
+    console.log(formData);
     // URL encode form
     // Note: This uses a x-www-form-urlencoded rather than sending JSON so that
     // the form also in browsers without JavaScript
     const encodedForm = Object.keys(formData).map((key) => {
       return encodeURIComponent(key) + '=' + encodeURIComponent(formData[key])
     }).join('&')
-    
-    fetch('/account/user', {
+
+    fetch('/newpoll', {
       credentials: 'include',
       method: 'POST',
       headers: {
