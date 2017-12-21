@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-//const Option = require('./Option');
 
 const OptionSchema = new mongoose.Schema({
     name: { type: String, required: true},

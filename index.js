@@ -4,6 +4,7 @@ const express = require('express')()
 const session = require('express-session')
 const next = require('next')
 const auth = require('./routes/auth')
+const poll = require('./routes/poll')
 const smtpTransport = require('nodemailer-smtp-transport')
 const directTransport = require('nodemailer-direct-transport')
 const MongoClient = require('mongodb').MongoClient
@@ -11,7 +12,6 @@ const MongoStore = require('connect-mongo')(session)
 const Mongoose = require('mongoose');
 const NeDB = require('nedb') // Use MongoDB work-a-like if no user db configured
 const cookieParser = require('cookie-parser')
-const Poll = require('./models/poll')
 
 // Load environment variables from .env file if present
 require('dotenv').load()
@@ -121,6 +121,12 @@ app.prepare()
     serverUrl: process.env.SERVER_URL || null
   })
 
+  poll.configure({
+    app: app,
+    express: express,
+    polldb: polldb,
+  })
+
   // A simple example of custom routing
   //
   // Send requests for '/custom-route/{anything}' to 'pages/demos/routing.js'
@@ -182,37 +188,7 @@ app.prepare()
       return res.status(403).json({error: 'Must be signed in to update profile'})
     }
   })
-
-  // Expose a route to allow users to create a new poll
-  express.post('/newpoll', (req, res) => {
-      if (req.user) {
-        console.log(req.body)
-        //Insert a new poll if the user is signed in
-        let newPoll = new Poll;
-        newPoll.title = req.body.title;
-        newPoll._createdBy = Mongoose.Types.ObjectId(req.body._createdBy);
-        //TODO Replace with code create logic here
-        newPoll.code = "poll1"
-        let options = req.body.options.split(",");
-        console.log(options)
-        if (options.length > 0) {
-          for(let i=0; i < options.length; i++) {
-            newPoll.options.push({ 
-              name: options[i]
-            });
-          }
-        }
-        newPoll.save(function (err) {
-          if (err) return handleError(err)
-            console.log('Success!');
-        });
-        //TODO: Make sure it redirects to the poll page with new code
-        return res.status(204).redirect('/')
-      } else {
-        return res.status(403).json({error: 'Must be signed in to create a poll'})
-      }
-    })
-  
+ 
   // Default catch-all handler to allow Next.js to handle all other routes
   express.all('*', (req, res) => {
     let nextRequestHandler = app.getRequestHandler()

@@ -2,7 +2,6 @@ import Link from 'next/link'
 import React from 'react'
 import Page from '../components/page'
 import Layout from '../components/layout'
-//import PollList from '../routes/poll'
 import { Row, Col, Nav, NavItem, NavLink } from 'reactstrap'
 
 export default class extends Page {
@@ -42,15 +41,29 @@ async componentDidMount() {
   if (this.state.polls === null) {
     try {
       this.setState({
-        polls: await AsyncData.getData(),
+        polls: getPolls(),
         error: null
       })
     } catch (e) {
       this.setState({
-        error: "Unable to fetch AsyncData on client"
+        error: "Unable to fetch polls on client"
       })
     }
   }
+}
+
+getPolls() {
+  fetch('/polls', {
+    credentials: 'include'
+  })
+  .then(r => r.json())
+  .then(poll => {
+    //TODO: Set the poll state with poll json
+    if (!poll) return
+    this.setState({
+      poll: poll
+   })
+  })
 }
   render() {
     return (
