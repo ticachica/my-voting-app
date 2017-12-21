@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import React from 'react'
+import fetch from 'unfetch'
 import Page from '../components/page'
 import Layout from '../components/layout'
 import { Row, Col, Nav, NavItem, NavLink } from 'reactstrap'
@@ -13,7 +14,7 @@ export default class extends Page {
   // If running on server, perform Async call
   if (typeof window === 'undefined') {
     try {
-      props.polls = await Poll.getPolls()
+      props.polls = await this.getPolls()
     } catch (e) {
       props.error = "Unable to fetch Polls on server"
     }
@@ -41,7 +42,7 @@ async componentDidMount() {
   if (this.state.polls === null) {
     try {
       this.setState({
-        polls: getPolls(),
+        polls: null,
         error: null
       })
     } catch (e) {
@@ -50,19 +51,23 @@ async componentDidMount() {
       })
     }
   }
+  this.getPolls();
 }
 
 getPolls() {
   fetch('/polls', {
-    credentials: 'include'
+    method: 'GET', 
+    headers: { 'Content-Type' : 'applicaton/json' }
   })
   .then(r => r.json())
-  .then(poll => {
+  .then(polls => {
+    console.log(polls)
     //TODO: Set the poll state with poll json
-    if (!poll) return
+    if (!polls) return
     this.setState({
-      poll: poll
-   })
+      polls: polls
+    })
+    console.log(this.state.polls)
   })
 }
   render() {
@@ -70,7 +75,8 @@ getPolls() {
       <Layout session={this.props.session}>
         <h1>Voting App</h1>
         <p> Below are polls created on <i>my voting app</i></p> 
-        <p> TODO: Insert a table with polls </p>
+        {console.log(this.state.polls)}
+        <RenderPolls polls={this.state.polls} error={this.state.error}/>
      </Layout>
     )
   }
@@ -82,17 +88,18 @@ export class RenderPolls extends React.Component {
     if (this.props.error) {
       // Display error if Polls have fialed to load
       return <p><strong>Error loading Polls:</strong> {this.props.error}</p>
-    } else if (!this.props.Polls) {
+    } else if (!this.props.polls) {
       // Display place holder if Polls are still loading (and no error)
       return <p><i>Loading content…</i></p>
     } else {
       // Display Polls
       return <div>
         {
-          this.props.Polls.map((poll, i) => (
+          this.props.polls.map((poll, i) => (
             <div key={i}>
-              <strong>{poll.title}</strong>
-              <p><i>{poll.body}</i></p>
+              <p>
+                {poll.title}
+              </p>
             </div>
           ))
         }

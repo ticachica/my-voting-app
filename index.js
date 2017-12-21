@@ -62,7 +62,7 @@ const app = next({
 // (this makes cookies easier to work with in pages when rendering server side)
 express.use(cookieParser())
 
-let userdb, polldb, sessionStore
+let userdb, sessionStore
 
 app.prepare()
 .then(() => {
@@ -73,7 +73,6 @@ app.prepare()
      Mongoose.connect(process.env.USER_DB_CONNECTION_STRING, {useMongoClient: true}, (err, db) => {
         Mongoose.Promise = global.Promise;
         userdb = db.collection('users');
-        polldb = db.collection('polls')
         resolve(true);
       })
     } else {
@@ -124,7 +123,6 @@ app.prepare()
   poll.configure({
     app: app,
     express: express,
-    polldb: polldb,
   })
 
   // A simple example of custom routing

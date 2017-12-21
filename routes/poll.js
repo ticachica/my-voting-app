@@ -10,8 +10,6 @@ exports.configure = ({
     app = null,
     // Express Server
     express = null,
-    // MongoDB connection to the user database
-    polldb = null,
   } = {}) => {
 
     if (app === null) {
@@ -22,16 +20,13 @@ exports.configure = ({
       throw new Error('express option must be an express server instance')
     }
 
-    if (polldb === null) {
-      throw new Error('polldb option must be provided')
-    }
     // Load body parser to handle POST requests
     express.use(bodyParser.json())
     express.use(bodyParser.urlencoded({extended: true}))
 
     // Expose a route to return all polls 
     express.get('/polls', (req, res) => {
-      polldb.find({}, (err, polls) => {
+      Poll.find({}, (err, polls) => {
         if (err)
           return res.status(500).json({error: 'Unable to fetch polls'})
         else if (!polls)
@@ -40,10 +35,23 @@ exports.configure = ({
       })
     })  
 
+        // Expose a route to return all polls 
+    express.get('/polls/:code', (req, res) => {
+      let code = req.params.code;
+    
+      Poll.findOne({'code': code}, (err, poll) => {
+        if (err)
+          return res.status(500).json({error: 'Unable to fetch this poll'})
+        else if (!poll)
+          return res.json({})
+        res.json(poll)
+      })
+    }) 
+
     // Expose a route to return all user polls 
     express.get('/mypolls', (req, res) => {
       if (req.user) {
-        polldb.find({'_createdBy': req.user.id}, (err, polls) => {
+        Poll.find({'_createdBy': req.user.id}, (err, polls) => {
           //Fix to return empty so page knows to say there are no user created polls
           if (err)
             return res.status(500).json({error: 'Unable to fetch user polls'})
