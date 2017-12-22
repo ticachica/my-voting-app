@@ -35,8 +35,8 @@ exports.configure = ({
       })
     })  
 
-        // Expose a route to return all polls 
-    express.get('/polls/:code', (req, res) => {
+        // Expose a route to return a single poll 
+    express.get('/api/polls/:code', (req, res) => {
       let code = req.params.code;
     
       Poll.findOne({'code': code}, (err, poll) => {
@@ -47,6 +47,22 @@ exports.configure = ({
         res.json(poll)
       })
     }) 
+
+    //Server page
+    express.get('/polls/:code', (req, res) => {
+      let code = req.params.code;
+    
+      Poll.findOne({'code': req.params.code}, (err, poll) => {
+        if (err)
+          return res.status(500).json({error: 'Unable to fetch this poll'})
+        else if (!poll)
+          return res.json({})
+        const actualPage = '/details'
+        const queryParams = { code: req.params.code } 
+        app.render(req, res, actualPage, queryParams)
+      })
+    }) 
+
 
     // Expose a route to return all user polls 
     express.get('/mypolls', (req, res) => {

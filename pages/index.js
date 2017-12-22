@@ -3,7 +3,6 @@ import React from 'react'
 import fetch from 'unfetch'
 import Page from '../components/page'
 import Layout from '../components/layout'
-import { Row, Col, Nav, NavItem, NavLink } from 'reactstrap'
 
 export default class extends Page {
  /* eslint no-undefined: "error" */
@@ -61,13 +60,10 @@ getPolls() {
   })
   .then(r => r.json())
   .then(polls => {
-    console.log(polls)
-    //TODO: Set the poll state with poll json
     if (!polls) return
     this.setState({
       polls: polls
     })
-    console.log(this.state.polls)
   })
 }
   render() {
@@ -75,7 +71,6 @@ getPolls() {
       <Layout session={this.props.session}>
         <h1>Voting App</h1>
         <p> Below are polls created on <i>my voting app</i></p> 
-        {console.log(this.state.polls)}
         <RenderPolls polls={this.state.polls} error={this.state.error}/>
      </Layout>
     )
@@ -97,9 +92,9 @@ export class RenderPolls extends React.Component {
         {
           this.props.polls.map((poll, i) => (
             <div key={i}>
-              <p>
-                {poll.title}
-              </p>
+                <Link as={`/polls/${poll.code}`} href={`/details?code=${poll.code}`} >
+                  <a>{poll.title}</a>
+                </Link>
             </div>
           ))
         }
