@@ -37,6 +37,9 @@ exports.configure = ({
 
         // Expose a route to return a single poll 
     express.get('/api/polls/:code', (req, res) => {
+      if (req.params.code === null)
+        return res.status(500).json({error: 'Unable to fetch this poll'})
+
       let code = req.params.code;
     
       Poll.findOne({'code': code}, (err, poll) => {
@@ -48,7 +51,7 @@ exports.configure = ({
       })
     }) 
 
-    //Server page
+    // Express route to render the poll details page
     express.get('/polls/:code', (req, res) => {
       let code = req.params.code;
     
@@ -110,6 +113,30 @@ exports.configure = ({
         return res.status(403).json({error: 'Must be signed in to create a poll'})
       }
     })
+
+      // Expose a route to allow users to create a new poll
+      express.post('/vote', (req, res) => {
+          console.log(req.body.code)
+          let code = req.body.code
+          let _id = req.body.id
+          let voteCount = req.body.voteCount
+
+          //vote
+          Poll.findOneAndUpdate(
+            {'code': code, "options._id": _id},
+            {
+              "$set": {
+                "options.$.vote": voteCount
+              }
+            }, (err, poll) => {
+              if (err)
+                return res.status(500).json({error: 'Unable to fetch this poll'})
+              else if (!poll) 
+                return res.status(500).json({error: 'Unable to fetch this poll'})
+           });
+          //TODO: Make sure it redirects to the poll page with new code
+          return res.status(204).redirect('/')
+      })
   }
 
   function getShortCode() {
