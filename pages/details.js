@@ -3,7 +3,7 @@ import React from 'react'
 import fetch from 'unfetch'
 import Page from '../components/page'
 import Layout from '../components/layout'
-import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap'
+import { Form, FormGroup, Button, Label, Input  } from 'reactstrap'
 
 
 export default class extends Page {
@@ -20,6 +20,9 @@ export default class extends Page {
                 props.error = "Unable to fetch Polls on server"
             }
         }
+
+        props.navmenu = false
+
         return props
     }
 
@@ -74,12 +77,19 @@ constructor(props) {
             return <p><i>Loading content…</i></p>
         } else {
             return (
+            <Layout session={this.props.session} navmenu={this.props.navmenu}>
             <div>
                <h2>Poll Title:</h2> 
                <p>{this.state.poll.title}</p>
-               <p><b>Voting Options</b></p>
-               <RenderVotingOptions poll={this.state.poll} />
+               <Form>
+                  <FormGroup>
+                    <Label for="Voting">Voting Options</Label>
+                    <RenderVotingOptions poll={this.state.poll} />
+                  </FormGroup>
+                <Button>Submit Vote</Button>
+               </Form>
            </div>
+           </Layout>
             )
         }
     }
@@ -88,14 +98,14 @@ constructor(props) {
 export class RenderVotingOptions extends React.Component {
     render() {
        // Display options
-        return <select>
+        return <Input type="select" name="select" id="VotingSelect">
           {
             this.props.poll.options.map((option, i) => (
-              <option key={i} value="{option.name}">
+              <option key={i} value={option.name}>
                  {option.name}
               </option>
             ))
           }
-        </select>
+        </Input>
       }
     }

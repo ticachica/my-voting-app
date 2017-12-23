@@ -67,8 +67,8 @@ export default class extends React.Component {
             <UserMenu session={this.props.session} toggleModal={this.toggleModal}/>
           </Collapse>
         </Navbar>
-        { /*<MainBody navmenu={this.props.navmenu}>  no need side nav bar*/}
-        <MainBody navmenu={false}>
+        <MainBody navmenu={this.props.navmenu}> {/* no need side nav bar*/}
+        {/*<MainBody navmenu={true}> */}
           {this.props.children}
         </MainBody>
         <Container>

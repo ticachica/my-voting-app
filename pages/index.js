@@ -3,6 +3,7 @@ import React from 'react'
 import fetch from 'unfetch'
 import Page from '../components/page'
 import Layout from '../components/layout'
+import { ListGroup, ListGroupItem } from 'reactstrap';
 
 export default class extends Page {
  /* eslint no-undefined: "error" */
@@ -18,6 +19,7 @@ export default class extends Page {
       props.error = "Unable to fetch Polls on server"
     }
   }
+  props.navmenu = false
 
   return props
 }
@@ -68,7 +70,7 @@ getPolls() {
 }
   render() {
     return (
-      <Layout session={this.props.session}>
+      <Layout session={this.props.session} navmenu={this.props.navmenu}>
         <h1>Voting App</h1>
         <p> Below are polls created on <i>my voting app</i></p> 
         <RenderPolls polls={this.state.polls} error={this.state.error}/>
