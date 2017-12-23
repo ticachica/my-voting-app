@@ -68,7 +68,6 @@ export default class extends React.Component {
           </Collapse>
         </Navbar>
         <MainBody navmenu={this.props.navmenu}> {/* no need side nav bar*/}
-        {/*<MainBody navmenu={true}> */}
           {this.props.children}
         </MainBody>
         <Container>
@@ -136,6 +135,11 @@ export class UserMenu extends React.Component {
     await Session.signout()
     Router.push('/')
   }
+
+  async handleNewPollSubmit(event) {
+    event.preventDefault()
+    Router.push('/newpoll')
+  }
   
   render() {
     if (this.props.session && this.props.session.user) {
@@ -148,7 +152,7 @@ export class UserMenu extends React.Component {
           <NavItem>
             <Form id="newpoll" method="post" action="/newpoll" onSubmit={this.handleNewPollSubmit}>
               <input name="_csrf" type="hidden" value={session.csrfToken}/>
-              <Button type="submit" color="primary">New Poll</Button>
+              <Button type="submit" color="primary">+</Button>
             </Form>
           </NavItem>
           <NavItem>
