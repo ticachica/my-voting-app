@@ -90,7 +90,8 @@ export class RenderPolls extends React.Component {
       return <p><i>Loading content…</i></p>
     } else {
       // Display Polls
-      return <div>
+      return (
+      <div>
         {
           this.props.polls.map((poll, i) => (
             <div key={i}>
@@ -101,6 +102,7 @@ export class RenderPolls extends React.Component {
           ))
         }
       </div>
+      )
     }
   }
 }

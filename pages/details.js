@@ -4,7 +4,8 @@ import fetch from 'unfetch'
 import Page from '../components/page'
 import Layout from '../components/layout'
 import Session from '../components/session'
-import { Form, FormGroup, Button, Label, Input  } from 'reactstrap'
+import Chart from '../components/chart'
+import { Container, Row, Col, Form, FormGroup, Button, Label, Input  } from 'reactstrap'
 
 
 export default class extends Page {
@@ -36,7 +37,8 @@ constructor(props) {
       poll: props.poll || null,
       code: props.code || null,
       error: props.error || null,
-      vote: ' '
+      vote: ' ',
+      chartData: {}
     }
 
     this.handleChange = this.handleChange.bind(this);
@@ -52,7 +54,8 @@ constructor(props) {
         this.setState({
           poll: null,
           code: null,
-          error: null
+          error: null,
+          chartData: {}
         })
       } catch (e) {
         this.setState({
@@ -71,10 +74,32 @@ constructor(props) {
     .then(poll => {
       //TODO: Set the poll state with poll json
       if (!poll) return
-      
+
+      let labels = [];
+      let data = [];
+      //Iterate poll.options
+      poll.options.map(option => {
+        //labels.push(options[i])
+        labels.push(option.name)
+        //data.push(options[i])
+        data.push(option.vote)
+      });
+     const voteData = {
+        labels: labels,
+        datasets: [{
+          data,
+          backgroundColor: [
+            'rgba(255, 99, 132, 0.6)',
+            'rgba(54, 162, 235, 0.6)',
+            'rgba(255, 206, 86, 0.6)'
+          ] 
+        }]
+      }
+  
       this.setState({
         poll: poll,
-        vote: poll.options[0].name
+        vote: poll.options[0].name,
+        chartData: voteData
       })
     })
 }
@@ -135,28 +160,38 @@ async handleSubmit(event) {
         } else {
             return (
             <Layout session={this.props.session} navmenu={this.props.navmenu}>
-            <div>
-               <h2>Poll Title:</h2> 
-               <h3>{this.state.poll.title}</h3>
-               <br />
-               <Form onSubmit={this.handleSubmit}>
-                  <FormGroup>
-                    <Label for="Voting"><b>Voting Options</b></Label>
-                    <Input name="code" type="hidden" value={this.state.poll.code} onChange={()=>{}}/> 
-                    <Input name="_csrf" type="hidden" value={this.state.session.csrfToken} onChange={()=>{}}/>
-                    <Input type="select" name="select" id="VotingSelect" value={this.state.vote} onChange={this.handleChange}>
-                    {
-                     this.state.poll.options.map((option, i) => (
-                         <option key={i} value={option.name}>
-                             {option.name}
-                         </option>
-                      ))
-                    }
-                    </Input>
-                  </FormGroup>
-                <Button color="secondary" type="submit">Submit Vote</Button>
-               </Form>
-           </div>
+              <Container>
+              <Row>
+                <Col className="text-center">
+                  <h1 className="mb-0">{this.state.poll.title}</h1>
+                </Col>
+              </Row>
+              <Row>
+                <Col >
+                  {alert}
+                  <Form onSubmit={this.handleSubmit}>
+                    <FormGroup>
+                      <Label for="Voting"><b>Voting Options</b></Label>
+                      <Input name="code" type="hidden" value={this.state.poll.code} onChange={()=>{}}/> 
+                      <Input name="_csrf" type="hidden" value={this.state.session.csrfToken} onChange={()=>{}}/>
+                      <Input type="select" name="select" id="VotingSelect" value={this.state.vote} onChange={this.handleChange}>
+                      {
+                        this.state.poll.options.map((option, i) => (
+                          <option key={i} value={option.name}>
+                            {option.name}
+                          </option>
+                        ))
+                      }
+                      </Input>
+                    </FormGroup>
+                    <Button color="secondary" type="submit">Submit Vote</Button>
+                  </Form>
+                </Col>
+                <Col>
+                  <Chart chartData={this.state.chartData} />
+                </Col>
+              </Row>
+              </Container>
            </Layout>
             )
         }
