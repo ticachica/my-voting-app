@@ -66,23 +66,39 @@ exports.configure = ({
       })
     }) 
 
-
-    // Expose a route to return all user polls 
-    express.get('/mypolls', (req, res) => {
+          // Expose a route to return all user polls 
+    express.get('/api/mypolls', (req, res) => {
       if (req.user) {
         Poll.find({'_createdBy': req.user.id}, (err, polls) => {
           //Fix to return empty so page knows to say there are no user created polls
           if (err)
             return res.status(500).json({error: 'Unable to fetch user polls'})
           else if (!polls)
-            return res.json({empty: true})
-            
+            return res.json({})              
           res.json(polls)
         })
       } else {
         return res.status(403).json({error: 'Must be signed in to get your polls'})
       }
     })  
+
+  
+      // Expose a route to return all user polls 
+      express.get('/mypolls', (req, res) => {
+        if (req.user) {
+          Poll.find({'_createdBy': req.user.id}, (err, polls) => {
+            //Fix to return empty so page knows to say there are no user created polls
+            if (err)
+              return res.status(500).json({error: 'Unable to fetch user polls'})
+            else if (!polls)
+              return               
+            const actualPage = '/mypolls'
+            app.render(req, res, actualPage)
+          })
+        } else {
+          return res.status(403).json({error: 'Must be signed in to get your polls'})
+        }
+      })  
 
     // Expose a route to allow users to create a new poll
     express.post('/newpoll', (req, res) => {
