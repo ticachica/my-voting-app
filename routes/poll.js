@@ -55,11 +55,14 @@ exports.configure = ({
     express.get('/polls/:code', (req, res) => {
       let code = req.params.code;
     
+      //TODO: Need to add in _error page if no code found
       Poll.findOne({'code': req.params.code}, (err, poll) => {
         if (err)
           return res.status(500).json({error: 'Unable to fetch this poll'})
-        else if (!poll)
-          return res.json({})
+        else if (!poll) {
+          return res.status(404).json({error: 'Unable to find this poll'})
+        }
+        return res.json({})
         const actualPage = '/details'
         const queryParams = { code: req.params.code } 
         app.render(req, res, actualPage, queryParams)
@@ -153,6 +156,19 @@ exports.configure = ({
           //TODO: Make sure it redirects to the poll page with new code
           return res.status(204).redirect('/')
       })
+
+          // Express route to render the poll details page
+    express.post('/api/delete', (req, res) => {
+      let code = req.body.code;
+    
+      Poll.remove({'code': code}, (err, poll) => {
+        if (err)
+          return res.status(500).json({error: 'Unable to fetch this poll'})
+        else if (!poll)
+          return res.json({})
+        return res.status(204)
+      })
+    }) 
   }
 
   function getShortCode() {

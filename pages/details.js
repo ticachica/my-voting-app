@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Router from 'next/router'
 import React from 'react'
 import fetch from 'unfetch'
 import Page from '../components/page'
@@ -43,6 +44,7 @@ constructor(props) {
 
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
+    this.handlePollDelete  = this.handlePollDelete.bind(this);
   }
 
   async componentDidMount() {
@@ -72,16 +74,13 @@ constructor(props) {
     })
     .then(r => r.json())
     .then(poll => {
-      //TODO: Set the poll state with poll json
       if (!poll) return
 
       let labels = [];
       let data = [];
       //Iterate poll.options
       poll.options.map(option => {
-        //labels.push(options[i])
         labels.push(option.name)
-        //data.push(options[i])
         data.push(option.vote)
       });
      const voteData = {
@@ -109,6 +108,43 @@ handleChange(event) {
         vote: event.target.value
     });
   }
+
+  async handlePollDelete(event) {  
+    event.preventDefault()
+    
+    const code = this.state.poll.code
+
+    const formData = {
+      _csrf: await Session.getCsrfToken(),
+      code: code
+    }
+    console.log("code: " + code)
+
+        // URL encode form
+    // Note: This uses a x-www-form-urlencoded rather than sending JSON so that
+    // the form also in browsers without JavaScript
+    const encodedForm = Object.keys(formData).map((key) => {
+      return encodeURIComponent(key) + '=' + encodeURIComponent(formData[key])
+    }).join('&')
+
+    fetch('/api/delete', {
+      credentials: 'include',
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: encodedForm
+      })
+      .then(async res => { 
+        console.log('deleted poll')
+        if (res.status === 204)  {
+          console.log('about to reroute to /')
+          Router.push('/')
+        }
+      })
+      
+    Router.push('/')
+}
 
 async handleSubmit(event) {
     // Submits the URL encoded form without causing a page reload
@@ -190,6 +226,14 @@ async handleSubmit(event) {
                 </Col>
                 <Col sm="9">
                   <Chart chartData={this.state.chartData} />
+                </Col>
+                <Col sm="9">
+                  {/* <a href="#" className="btn btn-danger" onClick={this.handlePollDelete}>Remove this Poll</a> */}
+                  <Form id="deletepoll" method="post" action="/api/delete" onSubmit={this.handlePollDelete}>
+                    <input name="_csrf" type="hidden" value={this.state.session.csrfToken}/>
+                    <input name="code" type="hidden" value={this.state.code}/>
+                    <Button type="submit" color="danger">Remove this Poll</Button>
+                  </Form>
                 </Col>
               </Row>
               </Container>

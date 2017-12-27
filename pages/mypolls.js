@@ -84,7 +84,6 @@ getMyPolls() {
       console.log("empty")
       return
     }
-    console.log(polls)
     this.setState({
       polls: polls
     })
