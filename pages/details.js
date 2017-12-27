@@ -143,6 +143,7 @@ async handleSubmit(event) {
       .then(async res => {
         if (res.status === 200) {
             // Make sure to get the updated poll after voting
+            //TODO: The chart is not automatically updating.
             this.getPoll(this.state.poll.code)
             alert('Your vote is: ' + this.state.vote);          
         } else {
@@ -160,14 +161,14 @@ async handleSubmit(event) {
         } else {
             return (
             <Layout session={this.props.session} navmenu={this.props.navmenu}>
-              <Container>
+              <Container fluid>
               <Row>
                 <Col className="text-center">
                   <h1 className="mb-0">{this.state.poll.title}</h1>
                 </Col>
               </Row>
               <Row>
-                <Col >
+                <Col sm="3">
                   {alert}
                   <Form onSubmit={this.handleSubmit}>
                     <FormGroup>
@@ -187,7 +188,7 @@ async handleSubmit(event) {
                     <Button color="secondary" type="submit">Submit Vote</Button>
                   </Form>
                 </Col>
-                <Col>
+                <Col sm="9">
                   <Chart chartData={this.state.chartData} />
                 </Col>
               </Row>

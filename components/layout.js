@@ -140,6 +140,11 @@ export class UserMenu extends React.Component {
     event.preventDefault()
     Router.push('/newpoll')
   }
+
+  async handleMyPollsSubmit(event) {
+    event.preventDefault()
+    Router.push('/mypolls')
+  }
   
   render() {
     if (this.props.session && this.props.session.user) {
@@ -156,6 +161,9 @@ export class UserMenu extends React.Component {
             </Form>
           </NavItem>
           <NavItem>
+            <a href="/mypolls" className="btn btn-success">My Polls</a>
+          </NavItem>
+          <NavItem>
             <Form id="signout" method="post" action="/auth/signout" onSubmit={this.handleSignoutSubmit}>
               <input name="_csrf" type="hidden" value={session.csrfToken}/>
               <Button type="submit" color="secondary">Sign out</Button>
@@ -169,7 +177,8 @@ export class UserMenu extends React.Component {
           <NavItem>
           {/* @TODO Add support for passing current URL path as redirect URL so that users without JavaScript are also
           redirected to the page they were on before they signed in. */}
-          <a href="/auth/signin?redirect=/" className="btn btn-primary" onClick={this.props.toggleModal}>Sign up / Sign in</a>
+          {/* <a href="/auth/signin?redirect=/" className="btn btn-primary" onClick={this.props.toggleModal}>Sign up / Sign in</a> */}
+          <a href="/auth/signin" className="btn btn-primary">Sign up / Sign in</a>
           </NavItem>
         </Nav>
       )
