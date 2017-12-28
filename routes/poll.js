@@ -40,7 +40,7 @@ exports.configure = ({
       if (req.params.code === null)
         return res.status(500).json({error: 'Unable to fetch this poll'})
 
-      let code = req.params.code;
+      const code = req.params.code;
     
       Poll.findOne({'code': code}, (err, poll) => {
         if (err)
@@ -53,7 +53,7 @@ exports.configure = ({
 
     // Express route to render the poll details page
     express.get('/polls/:code', (req, res) => {
-      let code = req.params.code;
+      const code = req.params.code;
     
       //TODO: Need to add in _error page if no code found
       Poll.findOne({'code': req.params.code}, (err, poll) => {
@@ -62,9 +62,9 @@ exports.configure = ({
         else if (!poll) {
           return res.status(404).json({error: 'Unable to find this poll'})
         }
-        return res.json({})
+        
         const actualPage = '/details'
-        const queryParams = { code: req.params.code } 
+        const queryParams = { code: code } 
         app.render(req, res, actualPage, queryParams)
       })
     }) 

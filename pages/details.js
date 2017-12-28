@@ -7,7 +7,7 @@ import Layout from '../components/layout'
 import Session from '../components/session'
 import Chart from '../components/chart'
 import { Container, Row, Col, Form, FormGroup, Button, Label, Input  } from 'reactstrap'
-
+import {TwitterButton, TwitterCount} from 'react-social'
 
 export default class extends Page {
     /* eslint no-undefined: "error" */
@@ -18,10 +18,15 @@ export default class extends Page {
           // If running on server, perform Async call
         if (typeof window === 'undefined') {
             try {
-                props.poll = await this.getPoll(code)
+              props.shareUrl = "http://" + req.headers.host + "/" + code
+              console.log("S: Share URL: " + props.shareUrl)
+              props.poll = await this.getPoll(code)
             } catch (e) {
-                props.error = "Unable to fetch Polls on server"
+              props.error = "Unable to fetch this poll on server"
             }
+        } else {
+          props.shareUrl = "http://" + window.location.host + "/polls/" + props.code
+          console.log("C: Share URL: " + props.shareUrl)
         }
         //props.session = await Session.getSession({force: true, req: req})
         props.navmenu = false
@@ -39,7 +44,8 @@ constructor(props) {
       code: props.code || null,
       error: props.error || null,
       vote: ' ',
-      chartData: {}
+      chartData: {},
+      shareUrl: props.shareUrl || null
     }
 
     this.handleChange = this.handleChange.bind(this);
@@ -57,11 +63,11 @@ constructor(props) {
           poll: null,
           code: null,
           error: null,
-          chartData: {}
+          chartData: {},
         })
       } catch (e) {
         this.setState({
-          error: "Unable to fetch polls on client"
+          error: "Unable to fetch this poll on client " + e
         })
       }
     }
@@ -118,7 +124,6 @@ handleChange(event) {
       _csrf: await Session.getCsrfToken(),
       code: code
     }
-    console.log("code: " + code)
 
         // URL encode form
     // Note: This uses a x-www-form-urlencoded rather than sending JSON so that
@@ -139,11 +144,9 @@ handleChange(event) {
         console.log('deleted poll')
         if (res.status === 204)  {
           console.log('about to reroute to /')
-          Router.push('/')
         }
+        Router.push('/')
       })
-      
-    Router.push('/')
 }
 
 async handleSubmit(event) {
@@ -195,6 +198,9 @@ async handleSubmit(event) {
             // Display place holder if Polls are still loading (and no error)
             return <p><i>Loading content…</i></p>
         } else {
+            const message = "Please check out this poll: " + this.state.poll.title;
+            const shareUrl = this.state.shareUrl;
+
             return (
             <Layout session={this.props.session} navmenu={this.props.navmenu}>
               <Container fluid>
@@ -223,6 +229,9 @@ async handleSubmit(event) {
                     </FormGroup>
                     <Button color="secondary" type="submit">Submit Vote</Button>
                   </Form>
+                  <TwitterButton url={shareUrl} message={message} >
+                    <i className="fab fa-twitter-square"></i>
+                  </TwitterButton> 
                 </Col>
                 <Col sm="9">
                   <Chart chartData={this.state.chartData} />

@@ -54,6 +54,7 @@ export default class extends React.Component {
           <meta name="viewport" content="width=device-width, initial-scale=1"/>
           <style dangerouslySetInnerHTML={{__html: Styles}}/>
           <script src="https://cdn.polyfill.io/v2/polyfill.min.js"/>
+          <link href="https://use.fontawesome.com/releases/v5.0.2/css/all.css" rel="stylesheet" />
         </Head>
         <Navbar toggleable className="navbar navbar-dark bg-dark navbar-expand-md sticky-top " style={{marginBottom: 10}}>
           <Link prefetch href="/"><NavbarBrand href="/">{Package.name}</NavbarBrand></Link>
