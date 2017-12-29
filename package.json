@@ -2,7 +2,7 @@
   "name": "my-voting-app",
   "version": "1.0.0",
   "description": "Voting App using Next.js with email, oAuth authentication, and mongodb",
-  "author": "Iain Collins <me@iaincollins.com>",
+  "author": "Jennifer Arguello <jarguello@gmail.com>",
   "license": "ISC",
   "repository": "https://github.com/iaincollins/nextjs-starter.git",
   "main": "index.js",
@@ -65,10 +65,11 @@
     "dev": "NODE_ENV=development PORT=3000 node index.js",
     "debug": "NODE_ENV=development PORT=3000 node --inspect index.js",
     "build": "next build",
-    "start": "node index.js"
+    "start": "node index.js",
+    "heroku-postbuild": "next build" 
   },
   "engines": {
-    "node": "7.x.x"
+    "node": "9.2.1"
   },
   "xo": {
     "space:": 2,
