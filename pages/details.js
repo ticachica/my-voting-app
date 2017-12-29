@@ -5,7 +5,7 @@ import fetch from 'unfetch'
 import Page from '../components/page'
 import Layout from '../components/layout'
 import Session from '../components/session'
-import Chart from '../components/chart'
+import {Doughnut} from 'react-chartjs-2' 
 import { Collapse, Container, Row, Col, Form, FormGroup, Button, Label, Input  } from 'reactstrap'
 import {TwitterButton, TwitterCount} from 'react-social'
 
@@ -45,7 +45,11 @@ constructor(props) {
       chartData: {},
       shareUrl: props.shareUrl || null,
       isOpen: false,
-      addoption: ' ' 
+      addoption: ' ',
+      displayTitle: true,
+      displayLegend: true,
+      legendPosition: 'bottom',
+      titleText: 'Poll Results', 
     }
 
     this.handleChange = this.handleChange.bind(this);
@@ -97,8 +101,12 @@ constructor(props) {
           backgroundColor: [
             'rgba(255, 99, 132, 0.6)',
             'rgba(54, 162, 235, 0.6)',
-            'rgba(255, 206, 86, 0.6)'
-          ] 
+            'rgba(255, 206, 86, 0.6)',
+            'rgba(75, 192, 192, 0.6)',
+            'rgba(153, 102, 255, 0.6)',
+            'rgba(255, 159, 64, 0.6)',
+            'rgba(255, 99, 132, 0.6)'
+          ]
         }]
       }
   
@@ -110,7 +118,6 @@ constructor(props) {
     })
 }
 
-/*
 updateChartData() {
   let labels = [];
   let data = [];
@@ -119,8 +126,26 @@ updateChartData() {
     labels.push(option.name)
     data.push(option.vote)
   });
+  const newChartData = {
+    labels: labels,
+    datasets: [{
+      data,
+      backgroundColor: [
+        'rgba(255, 99, 132, 0.6)',
+        'rgba(54, 162, 235, 0.6)',
+        'rgba(255, 206, 86, 0.6)',
+        'rgba(75, 192, 192, 0.6)',
+        'rgba(153, 102, 255, 0.6)',
+        'rgba(255, 159, 64, 0.6)',
+        'rgba(255, 99, 132, 0.6)'
+      ] 
+    }]
+  }
+
+  this.setState({
+    chartData: newChartData
+  })
 }
-*/
 
 handleChange(event) {
   if (!this.state.isOpen && event.target.value === 'addoption') { //show add option text input
@@ -209,6 +234,7 @@ async handleSubmit(event) {
             // Make sure to get the updated poll after voting
             //TODO: The chart is not automatically updating.
             this.getPoll(this.state.poll.code)
+            this.updateChartData()
             alert('Your vote is: ' + this.state.addoption);  
         } else {
             alert('Your vote failed! error: ' + res.status);         
@@ -251,6 +277,7 @@ async handleSubmit(event) {
             // Make sure to get the updated poll after voting
             //TODO: The chart is not automatically updating.
             this.getPoll(this.state.poll.code)
+            this.updateChartData()
             alert('Your vote is: ' + this.state.vote);          
         } else {
             alert('Your vote failed!');         
@@ -310,7 +337,20 @@ async handleSubmit(event) {
                   </TwitterButton> 
                 </Col>
                 <Col sm="9">
-                  <Chart chartData={this.state.chartData} />
+                  <Doughnut 
+                    data={this.state.chartData}
+                    options={{
+                      title: {
+                      display: this.state.displayTitle,
+                      text: this.state.titleText,
+                      fontSize: 25
+                    },
+                    legend: {
+                      display: this.state.displayLegend,
+                      position: this.state.legendPosition
+                    }
+                    }}
+                  />
                 </Col>
                 <Col sm="9">
                   <Form id="deletepoll" value=" " method="post" action="/api/delete" onSubmit={this.handlePollDelete}>
