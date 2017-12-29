@@ -11,4 +11,4 @@ TODO: installation and viewing instructions TBD
 - [x] As an authenticated user, I can delete polls that I decide I don't want anymore.
 - [x] As an authenticated user, I can create a poll with any number of possible items.
 - [x] As an unauthenticated or authenticated user, I can see and vote on everyone's polls.
-- [ ] As an authenticated user, if I don't like the options on a poll, I can create a new option.
+- [x] As an authenticated user, if I don't like the options on a poll, I can create a new option.

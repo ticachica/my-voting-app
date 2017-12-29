@@ -157,7 +157,40 @@ exports.configure = ({
           return res.status(204).redirect('/')
       })
 
-          // Express route to render the poll details page
+          // Expose a route to allow users to create a new poll
+      express.post('/newvote', (req, res) => {
+        console.log(req.body.code)
+        const code = req.body.code
+        const newOption = req.body.newOption
+
+        if (req.user) {
+          //vote
+          Poll.findOneAndUpdate({
+            'code': code
+          }, {
+            "$push": {
+              "options": {
+                name: newOption,
+                vote: 1  
+              } 
+            }
+          }, (err, poll) => {
+            if (err)
+              return res.status(500).json({
+                error: 'Unable to update this poll'
+              })
+            else if (!poll)
+              return res.status(500).json({
+                error: 'Unable to fetch this poll'
+              })
+            return res.status(204).redirect('/')
+          });
+        } else {
+          return res.status(403).json({error: 'Must be signed in to get your polls'})
+        }
+   })
+
+    // Express route to render the poll details page
     express.post('/api/delete', (req, res) => {
       let code = req.body.code;
     

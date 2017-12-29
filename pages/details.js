@@ -6,7 +6,7 @@ import Page from '../components/page'
 import Layout from '../components/layout'
 import Session from '../components/session'
 import Chart from '../components/chart'
-import { Container, Row, Col, Form, FormGroup, Button, Label, Input  } from 'reactstrap'
+import { Collapse, Container, Row, Col, Form, FormGroup, Button, Label, Input  } from 'reactstrap'
 import {TwitterButton, TwitterCount} from 'react-social'
 
 export default class extends Page {
@@ -19,14 +19,12 @@ export default class extends Page {
         if (typeof window === 'undefined') {
             try {
               props.shareUrl = "http://" + req.headers.host + "/" + code
-              console.log("S: Share URL: " + props.shareUrl)
               props.poll = await this.getPoll(code)
             } catch (e) {
               props.error = "Unable to fetch this poll on server"
             }
         } else {
           props.shareUrl = "http://" + window.location.host + "/polls/" + props.code
-          console.log("C: Share URL: " + props.shareUrl)
         }
         //props.session = await Session.getSession({force: true, req: req})
         props.navmenu = false
@@ -45,7 +43,9 @@ constructor(props) {
       error: props.error || null,
       vote: ' ',
       chartData: {},
-      shareUrl: props.shareUrl || null
+      shareUrl: props.shareUrl || null,
+      isOpen: false,
+      addoption: ' ' 
     }
 
     this.handleChange = this.handleChange.bind(this);
@@ -74,7 +74,8 @@ constructor(props) {
     this.getPoll(this.state.code);
   }
 
-  getPoll(code) { fetch('/api/polls/'+code, {
+  getPoll(code) { 
+    fetch('/api/polls/'+code, {
       method: 'GET', 
       headers: { 'Content-Type' : 'applicaton/json' },
     })
@@ -109,11 +110,35 @@ constructor(props) {
     })
 }
 
+/*
+updateChartData() {
+  let labels = [];
+  let data = [];
+  //Iterate poll.options
+  this.state.poll.options.map(option => {
+    labels.push(option.name)
+    data.push(option.vote)
+  });
+}
+*/
+
 handleChange(event) {
+  if (!this.state.isOpen && event.target.value === 'addoption') { //show add option text input
     this.setState({
-        vote: event.target.value
+      isOpen: true,
+    })
+  } else if (this.state.isOpen && event.target.type === 'text') { //process the new option input
+    this.setState({
+      addoption: event.target.value 
+    })
+  } else { // process someone selecting from the drop down and collapse text input
+    this.setState({
+      vote: event.target.value,
+      isOpen: false,
+      addoption: ' '
     });
   }
+}
 
   async handlePollDelete(event) {  
     event.preventDefault()
@@ -140,36 +165,78 @@ handleChange(event) {
         },
         body: encodedForm
       })
+      .then( r => r.json() )
       .then(async res => { 
         console.log('deleted poll')
-        if (res.status === 204)  {
-          console.log('about to reroute to /')
-        }
-        Router.push('/')
       })
+      // After deletion redirect to the home page
+      Router.push('/')
 }
 
 async handleSubmit(event) {
     // Submits the URL encoded form without causing a page reload
     event.preventDefault()
     const poll = this.state.poll;
-    const option = poll.options.find((option) => { return option.name === this.state.vote; });
-    const voteCount = Number(option.vote) + 1
-    console.log("votes: "+voteCount)
-    
-    const formData = {
+
+    //Test if this is a new option
+    if (this.state.isOpen) {
+      const newOption = this.state.addoption
+      //set up the form 
+      const formData = {
         _csrf: await Session.getCsrfToken(),
         code: this.state.poll.code,
-        id: option._id,
-        voteCount : voteCount
-    }
+        newOption : newOption
+      }
 
-    // URL encode form
-    // Note: This uses a x-www-form-urlencoded rather than sending JSON so that
-    // the form also in browsers without JavaScript
-    const encodedForm = Object.keys(formData).map((key) => {
+      // URL encode form
+      // Note: This uses a x-www-form-urlencoded rather than sending JSON so that
+      // the form also in browsers without JavaScript
+      const encodedForm = Object.keys(formData).map((key) => {
         return encodeURIComponent(key) + '=' + encodeURIComponent(formData[key])
       }).join('&')
+
+      //Call api to add a new option and set vote to 1
+      fetch('/newvote', {
+        credentials: 'include',
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: encodedForm
+      })
+      .then(async res => {
+        if (res.status === 200) {
+            // Make sure to get the updated poll after voting
+            //TODO: The chart is not automatically updating.
+            this.getPoll(this.state.poll.code)
+            alert('Your vote is: ' + this.state.addoption);  
+        } else {
+            alert('Your vote failed! error: ' + res.status);         
+        }
+        this.setState({
+          isOpen: false,
+          addoption: ' '
+        }) 
+      })
+    } else {
+      const option = poll.options.find((option) => { 
+        return option.name === this.state.vote; 
+      });
+      const voteCount = Number(option.vote) + 1
+      
+      const formData = {
+          _csrf: await Session.getCsrfToken(),
+          code: this.state.poll.code,
+          id: option._id,
+          voteCount : voteCount
+      }
+
+      // URL encode form
+      // Note: This uses a x-www-form-urlencoded rather than sending JSON so that
+      // the form also in browsers without JavaScript
+      const encodedForm = Object.keys(formData).map((key) => {
+          return encodeURIComponent(key) + '=' + encodeURIComponent(formData[key])
+        }).join('&')
 
       fetch('/vote', {
         credentials: 'include',
@@ -188,8 +255,9 @@ async handleSubmit(event) {
         } else {
             alert('Your vote failed!');         
         }
-    })
+      })
   }
+}
 
     render() {
         if (this.state.error) {
@@ -197,6 +265,65 @@ async handleSubmit(event) {
         } else if (!this.state.poll) {
             // Display place holder if Polls are still loading (and no error)
             return <p><i>Loading content…</i></p>
+        } else if (this.state.isSignedIn) {
+          const message = "Please check out this poll: " + this.state.poll.title;
+            const shareUrl = this.state.shareUrl;
+
+            return (
+            <Layout session={this.props.session} navmenu={this.props.navmenu}>
+              <Container fluid>
+              <Row>
+                <Col className="text-center">
+                  <h1 className="mb-0">{this.state.poll.title}</h1>
+                </Col>
+              </Row>
+              <Row>
+                <Col sm="3">
+                  <Form onSubmit={this.handleSubmit}>
+                    <FormGroup>
+                      <Label for="Voting"><b>Voting Options</b></Label>
+                      <Input name="code" type="hidden" value={this.state.poll.code} onChange={()=>{}}/> 
+                      <Input name="_csrf" type="hidden" value={this.state.session.csrfToken} onChange={()=>{}}/>
+                      <Input type="select" name="vote" id="VotingSelect" value={this.state.vote} onChange={this.handleChange}>
+                      {
+                        this.state.poll.options.map((option, i) => (
+                          <option key={i} value={option.name}>
+                            {option.name}
+                          </option>
+                        ))
+                      }
+                         <option value="addoption">
+                            Add an option...
+                          </option>
+                     </Input>
+                    </FormGroup>
+                    <Collapse isOpen={this.state.isOpen}>
+                      <FormGroup>
+                        Vote with this:
+                        <Input type="text" name="newOption" id="newOption" value={this.state.addoption} placeholder="enter write-in" onChange={this.handleChange}/>
+                      </FormGroup>
+                    </Collapse>
+                    <Button color="secondary" type="submit">Submit Vote</Button>
+                  </Form>
+                  <TwitterButton url={shareUrl} message={message} >
+                    <i className="fab fa-twitter-square"></i>
+                  </TwitterButton> 
+                </Col>
+                <Col sm="9">
+                  <Chart chartData={this.state.chartData} />
+                </Col>
+                <Col sm="9">
+                  <Form id="deletepoll" value=" " method="post" action="/api/delete" onSubmit={this.handlePollDelete}>
+                    <FormGroup>
+                      <input name="_csrf" type="hidden" value={this.state.session.csrfToken}/>
+                    </FormGroup>
+                    <Button type="submit" color="danger">Remove this Poll</Button>
+                  </Form>
+                </Col>
+              </Row>
+              </Container>
+           </Layout>
+            )
         } else {
             const message = "Please check out this poll: " + this.state.poll.title;
             const shareUrl = this.state.shareUrl;
@@ -211,13 +338,12 @@ async handleSubmit(event) {
               </Row>
               <Row>
                 <Col sm="3">
-                  {alert}
                   <Form onSubmit={this.handleSubmit}>
                     <FormGroup>
                       <Label for="Voting"><b>Voting Options</b></Label>
                       <Input name="code" type="hidden" value={this.state.poll.code} onChange={()=>{}}/> 
                       <Input name="_csrf" type="hidden" value={this.state.session.csrfToken} onChange={()=>{}}/>
-                      <Input type="select" name="select" id="VotingSelect" value={this.state.vote} onChange={this.handleChange}>
+                      <Input type="select" name="vote" id="VotingSelect" value={this.state.vote} onChange={this.handleChange}>
                       {
                         this.state.poll.options.map((option, i) => (
                           <option key={i} value={option.name}>
@@ -225,8 +351,14 @@ async handleSubmit(event) {
                           </option>
                         ))
                       }
-                      </Input>
+                     </Input>
                     </FormGroup>
+                    <Collapse isOpen={this.state.isOpen}>
+                      <FormGroup>
+                        Vote with this:
+                        <Input type="text" name="newOption" id="newOption" value={this.state.addoption} placeholder="enter write-in" onChange={this.handleChange}/>
+                      </FormGroup>
+                    </Collapse>
                     <Button color="secondary" type="submit">Submit Vote</Button>
                   </Form>
                   <TwitterButton url={shareUrl} message={message} >
@@ -237,10 +369,10 @@ async handleSubmit(event) {
                   <Chart chartData={this.state.chartData} />
                 </Col>
                 <Col sm="9">
-                  {/* <a href="#" className="btn btn-danger" onClick={this.handlePollDelete}>Remove this Poll</a> */}
-                  <Form id="deletepoll" method="post" action="/api/delete" onSubmit={this.handlePollDelete}>
-                    <input name="_csrf" type="hidden" value={this.state.session.csrfToken}/>
-                    <input name="code" type="hidden" value={this.state.code}/>
+                  <Form id="deletepoll" value=" " method="post" action="/api/delete" onSubmit={this.handlePollDelete}>
+                    <FormGroup>
+                      <input name="_csrf" type="hidden" value={this.state.session.csrfToken}/>
+                    </FormGroup>
                     <Button type="submit" color="danger">Remove this Poll</Button>
                   </Form>
                 </Col>
