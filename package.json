@@ -67,7 +67,7 @@
     "debug": "NODE_ENV=development PORT=3000 node --inspect index.js",
     "build": "next build",
     "start": "node index.js",
-    "heroku-postbuild": "next build"
+    "heroku-postbuild": "npm run build"
   },
   "engines": {
     "node": "9.2.1"
