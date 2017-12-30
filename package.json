@@ -53,10 +53,14 @@
     "dev": "NODE_ENV=development PORT=3000 node index.js",
     "debug": "NODE_ENV=development PORT=3000 node --inspect index.js",
     "build": "next build",
-    "start": "next start -p $PORT",
+    "start": "node index.js",
     "heroku-postbuild": "npm run build"
   },
   "engines": {
-    "node": "9.1.1"
+    "node": "8.9.3"
+  },
+  "now" : {
+    "alias": "my-voting-app",
+    "public": true
   }
 }
