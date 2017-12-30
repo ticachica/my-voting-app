@@ -8,6 +8,7 @@ const poll = require('./routes/poll')
 const smtpTransport = require('nodemailer-smtp-transport')
 const directTransport = require('nodemailer-direct-transport')
 const MongoClient = require('mongodb').MongoClient
+const assert = require('assert');
 const MongoStore = require('connect-mongo')(session)
 const Mongoose = require('mongoose');
 const NeDB = require('nedb') // Use MongoDB work-a-like if no user db configured
@@ -71,11 +72,11 @@ app.prepare()
     if (process.env.USER_DB_CONNECTION_STRING) {
       // Example connection string: mongodb://localhost:27017/mydb
      Mongoose.connect(process.env.USER_DB_CONNECTION_STRING, {useMongoClient: true}, (err, db) => {
-        Mongoose.Promise = global.Promise;
-        userdb = db.collection('users');
-        resolve(true);
-      })
-    } else {
+      assert.equal(null, err)
+      userdb = db.collection('users')
+      resolve(true)
+     })
+   } else {
       // If no user db connection string, use in-memory MongoDB work-a-like
       console.warn("Warning: No user database connection string configured (using in-memory database, user data will not be persisted)")
       userdb = new NeDB({ autoload: true })

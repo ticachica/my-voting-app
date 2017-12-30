@@ -7,6 +7,7 @@
   "repository": "https://github.com/iaincollins/nextjs-starter.git",
   "main": "index.js",
   "dependencies": {
+    "assert": "^1.4.1",
     "babel-core": "^6.26.0",
     "babel-plugin-wrap-in-js": "^1.1.1",
     "body-parser": "^1.17.2",
@@ -66,7 +67,7 @@
     "debug": "NODE_ENV=development PORT=3000 node --inspect index.js",
     "build": "next build",
     "start": "node index.js",
-    "heroku-postbuild": "next build" 
+    "heroku-postbuild": "next build"
   },
   "engines": {
     "node": "9.2.1"

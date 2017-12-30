@@ -6,4 +6,3 @@ node_modules/
 /.env.production
 .vscode/
 npm-shrinkwrap.json
-package-lock.json
