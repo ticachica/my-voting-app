@@ -406,7 +406,20 @@ async handleSubmit(event) {
                   </TwitterButton> 
                 </Col>
                 <Col sm="9">
-                  <Chart chartData={this.state.chartData} />
+                  <Doughnut 
+                    data={this.state.chartData}
+                    options={{
+                      title: {
+                      display: this.state.displayTitle,
+                      text: this.state.titleText,
+                      fontSize: 25
+                    },
+                    legend: {
+                      display: this.state.displayLegend,
+                      position: this.state.legendPosition
+                    }
+                    }}
+                  />
                 </Col>
                 <Col sm="9">
                   <Form id="deletepoll" value=" " method="post" action="/api/delete" onSubmit={this.handlePollDelete}>
